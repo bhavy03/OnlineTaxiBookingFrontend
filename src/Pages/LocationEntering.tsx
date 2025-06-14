@@ -30,8 +30,8 @@ function LocationEntering() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const [debouncedPickup] = useDebounce(pickup, 200);
-  const [debouncedDrop] = useDebounce(drop, 200);
+  const [debouncedPickup] = useDebounce(pickup, 300);
+  const [debouncedDrop] = useDebounce(drop, 300);
 
   const { data: pickupSuggestions } = useGetAutocompleteQuery(debouncedPickup, {
     skip: !debouncedPickup.trim(),
@@ -39,7 +39,6 @@ function LocationEntering() {
   const { data: dropSuggestions } = useGetAutocompleteQuery(debouncedDrop, {
     skip: !debouncedDrop.trim(),
   });
-
   useClickOutside([pickupRef, dropRef], () => {
     setShowPickupSuggestions(false);
     setShowDropSuggestions(false);
@@ -71,17 +70,7 @@ function LocationEntering() {
     const pickupLon = suggestedPickup?.lon;
     const dropLat = suggestedDrop?.lat;
     const dropLon = suggestedDrop?.lon;
-    // if (
-    //   pickupLat !== undefined &&
-    //   pickupLon !== undefined &&
-    //   dropLat !== undefined &&
-    //   dropLon !== undefined
-    // ) {
-      navigate(`/book-ride/${pickupLat}/${pickupLon}/${dropLat}/${dropLon}`);
-    // } else {
-    //   console.error("One or more coordinates are missing for booking.");
-    //   navigate("/"); 
-    // }
+    navigate(`book-ride/${pickupLat}/${pickupLon}/${dropLat}/${dropLon}`);
   };
 
   const handlePickupSuggestionClick = (suggestion: Suggestion) => {
@@ -101,8 +90,8 @@ function LocationEntering() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 relative">
-      <div className="text-3xl font-bold mb-4">Bharat Moves on Rapido</div>
+    <div className="max-w-md mx-auto mt-10 mb-20 relative">
+      <div className="text-3xl font-bold mb-4">Book Ride on TaxiBooking</div>
 
       <div className="flex flex-col gap-5 mb-3">
         <div ref={pickupRef} className="relative">
@@ -166,8 +155,8 @@ function LocationEntering() {
         </div>
       </div>
 
-      <button className="flex w-full" onClick={handleClick}>
-        <span className="w-full bg-amber-400 rounded p-3 text-center font-semibold">
+      <button className="flex w-full " onClick={handleClick}>
+        <span className="w-full bg-blue-300 border border-blue-500 text-blue-600 rounded p-3 text-center font-semibold hover:cursor-pointer">
           Book Ride
         </span>
       </button>
@@ -176,8 +165,3 @@ function LocationEntering() {
 }
 
 export default LocationEntering;
-
-// 26.9291996
-// 75.703282
-// 26.9181132
-// 75.790129

@@ -5,7 +5,6 @@ export const DriverFeatures = () => {
   const navigate = useNavigate();
   const handleClick = () => {
     const authenticated = localStorage.getItem("taxiToken") ? true : false;
-    // console.log(authenticated);
     if (!authenticated) {
       toast.error("Please login to see available rides");
       navigate("/driver/login");

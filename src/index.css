@@ -1,1 +1,17 @@
 @import "tailwindcss";
+.leaflet-routing-container {
+  display: none;
+}
+
+.custom-driver-marker {
+  /* This class applies to the main <div> of the L.DivIcon */
+  background-color: transparent !important; /* Ensure no default background */
+  border: none !important; /* Remove any default Leaflet borders */
+  box-shadow: none !important; /* Remove any default Leaflet shadows */
+  /* Any other styling for the container div if needed */
+}
+
+.custom-driver-marker svg {
+  fill: yourColor;
+  stroke: yourOtherColor;
+}

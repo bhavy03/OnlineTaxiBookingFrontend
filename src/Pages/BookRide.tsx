@@ -3,19 +3,22 @@ import EnteredLocation from "../Components/EnteredLocation";
 import SelectCarType from "../Components/SelectCarType";
 import SourceDestinationMap from "../Components/SourceDestinationMap";
 import * as signalR from "@microsoft/signalr";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import type { RecievedDriverInfo } from "../types/RecievedDriverInfo";
 import type { cartype } from "../types/carTypes";
 import type { RideInfo } from "../types/RideInfo";
+import { v4 as uuidv4 } from "uuid";
 import toast from "react-hot-toast";
+import { SendingRequestToDriver } from "../Components/SendingRequestToDriver";
+import { useGetReverseGeocodeQuery } from "../services/LocationIQAPI";
 
 function BookRide() {
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const [nearbyDrivers, setNearbyDrivers] = useState<RecievedDriverInfo[]>([]);
   const [selectedCarType, setSelectedCarType] = useState<cartype | null>(null);
   const { pickupLat, pickupLon, dropLat, dropLon } = useParams();
-  const [userConnectionId, setUserConnectionId] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [userConnectionId, setUserConnectionId] = useState<string>(" ");
+  const [continueBooking, setContinueBooking] = useState(false);
 
   const parsedPickupLat = pickupLat ? parseFloat(pickupLat) : 0;
   const parsedPickupLon = pickupLon ? parseFloat(pickupLon) : 0;
@@ -28,6 +31,20 @@ function BookRide() {
     dropLat: parsedDropLat,
     dropLon: parsedDropLon,
   };
+
+  const pickupCoords = {
+    lat: coords.pickupLat,
+    lon: coords.pickupLon,
+  };
+
+  const dropCoords = {
+    lat: coords.dropLat,
+    lon: coords.dropLon,
+  };
+
+  const { data: pickupCordsDisplayData } =
+    useGetReverseGeocodeQuery(pickupCoords);
+  const { data: dropCordsDisplayData } = useGetReverseGeocodeQuery(dropCoords);
 
   useEffect(() => {
     const startSignalRConnection = async () => {
@@ -42,29 +59,27 @@ function BookRide() {
         connectionRef.current.on("UserConnectionId", (ConnectionId) => {
           setUserConnectionId(ConnectionId);
         });
-        
+
         connectionRef.current.on(
           "ReceiveDriverLocationUpdate",
           (driverInfo: RecievedDriverInfo) => {
-            console.log("Driver location updated now:", driverInfo);
-            // setNearbyDrivers((prevDrivers) => [...prevDrivers, driverInfo]);
+            // console.log("Driver location updated now:", driverInfo);
             setNearbyDrivers((prevDrivers) => {
               const existingDriverIndex = prevDrivers.findIndex(
-                (driver) =>
-                  driver.driverConnectionId === driverInfo.driverConnectionId
+                (driver) => driver.driverEmail === driverInfo.driverEmail
               );
 
               if (existingDriverIndex !== -1) {
-                // Driver exists, update their coordinates
                 const updatedDrivers = [...prevDrivers];
                 updatedDrivers[existingDriverIndex] = {
                   ...updatedDrivers[existingDriverIndex],
                   driverLatitude: driverInfo.driverLatitude,
                   driverLongitude: driverInfo.driverLongitude,
+                  driverCarType: driverInfo.driverCarType,
+                  driverConnectionId: driverInfo.driverConnectionId,
                 };
                 return updatedDrivers;
               } else {
-                // New driver, add them to the array
                 return [...prevDrivers, driverInfo];
               }
             });
@@ -82,16 +97,15 @@ function BookRide() {
         ) {
           const Latitude = userpickupLat;
           const Longitude = userpickupLon;
-          const userId = localStorage.getItem("userId") || "";
+          const userId = localStorage.getItem("userEmail") || "";
           await connectionRef.current.invoke(
             "SetUserLocation",
             userId,
             Latitude,
             Longitude
           );
-          // console.log("inside invoke", Latitude, Longitude);
         } else {
-          console.warn("Pickup location not found or connection not active.");
+          console.error("Pickup location not found");
         }
       } catch (err) {
         console.error("Error starting SignalR connection:", err);
@@ -112,13 +126,16 @@ function BookRide() {
     setSelectedCarType(carType);
   };
 
-  // console.log("Selected car type:", selectedCarType);
   const handleClick = () => {
     if (selectedCarType) {
       const RideInfo: RideInfo = {
+        rideId: uuidv4(),
+        accepted: false,
         carInfo: selectedCarType,
         coords: coords,
         userEmail: localStorage.getItem("userEmail") || "",
+        pickupName: pickupCordsDisplayData?.display_name,
+        dropName: dropCordsDisplayData?.display_name,
       };
       console.log("RideInfo:", RideInfo, nearbyDrivers);
       if (connectionRef.current) {
@@ -126,29 +143,40 @@ function BookRide() {
           .invoke("RequestNearbyDrivers", RideInfo, nearbyDrivers)
           .then(() => {
             toast.success("Request sent to nearby drivers.");
+            setContinueBooking(true);
           })
-          .catch((err) => {
-            toast.error("Error requesting nearby drivers:", err);
+          .catch(() => {
+            toast.error("Error requesting nearby drivers:");
           });
       } else {
-        console.error("SignalR connection is not established.");
+        toast.error("SignalR connection is not established.");
       }
-      navigate(`/user/request-ride/${userConnectionId}`);
     } else {
       toast.error("Please select a car type before booking.");
     }
   };
+
+  if (continueBooking) {
+    return (
+      <SendingRequestToDriver
+        connectionId={userConnectionId}
+        signalRConnection={connectionRef.current}
+      />
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen flex flex-col">
-        <header className="flex my-2 mx-20 p-2 border">Here comes sign</header>
-
         <main className="flex flex-grow flex-row my-2 mx-20 p-4">
           <div className="m-2 w-3/5">
-            <EnteredLocation coords={coords} />
+            <EnteredLocation
+              pickupName={pickupCordsDisplayData?.display_name}
+              dropName={dropCordsDisplayData?.display_name}
+            />
             <SelectCarType coords={coords} userRideDetails={userRideDetails} />
           </div>
-          <div className="m-2 w-2/5">
+          <div className="m-2 w-2/5 flex flex-col flex-grow overflow-hidden z-0">
             <SourceDestinationMap
               coords={coords}
               nearbyDrivers={nearbyDrivers}
@@ -156,11 +184,11 @@ function BookRide() {
           </div>
         </main>
 
-        <div className="sticky bottom-0 bg-white z-10">
-          <hr className="border-gray-300" />
-          <footer className="my-4 mx-20 p-4 border bg-amber-400 rounded z-10">
+        <div className="sticky bottom-0 bg-white z-100">
+          <hr className="border-blue-300" />
+          <footer className="my-4 mx-20 p-4 border bg-blue-100 border-blue-300 shadow rounded z-10 hover:cursor-pointer hover:bg-blue-200 ">
             <button
-              className="flex mx-auto text-gray-100"
+              className="flex mx-auto text-blue-600 font-semibold hover:cursor-pointer"
               onClick={handleClick}
             >
               Continue Booking

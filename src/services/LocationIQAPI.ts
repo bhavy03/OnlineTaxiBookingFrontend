@@ -1,17 +1,9 @@
-// services/locationIQApi.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const locationIQApi = createApi({
   reducerPath: "locationIQApi",
   baseQuery: fetchBaseQuery({
     baseUrl: "https://us1.locationiq.com/v1/",
-    // prepareHeaders: (headers) => {
-    //   const token = import.meta.env.VITE_LOCATIONIQ_AUTH; // or any static/dynamic token
-    //   if (token) {
-    //     headers.set("Authorization", `Bearer ${token}`);
-    //   }
-    //   return headers;
-    // },
   }),
   endpoints: (builder) => ({
     getAutocomplete: builder.query({

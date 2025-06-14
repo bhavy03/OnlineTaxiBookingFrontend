@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setIsAuthenticated } from "../features/userSlice";
 
-function Header() {
+function DriverHeader() {
   const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
   const authenticated = localStorage.getItem("taxiToken") ? true : false;
   const dispatch = useAppDispatch();
@@ -11,7 +11,7 @@ function Header() {
     localStorage.removeItem("userEmail");
     localStorage.removeItem("taxiToken");
     dispatch(setIsAuthenticated(false));
-    navigate("/user");
+    navigate("/driver");
     window.location.reload();
   };
   return (
@@ -49,4 +49,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default DriverHeader;
