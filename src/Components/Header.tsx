@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setIsAuthenticated } from "../features/userSlice";
+// import LOGO from "../assets/LOGO.jpg"
 
 function Header() {
   const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
@@ -17,8 +18,11 @@ function Header() {
   return (
     <>
       <div className="ml-10 flex items-center">
-        <h1 className="text-xl font-bold text-indigo-700">LOGO</h1>{" "}
+        <h1 className="text-xl font-bold text-indigo-700">LOGO</h1>
       </div>
+      {/* <div className="flex items-center ">
+        <img src={LOGO} alt="Logo" className="h-12 w-auto rounded-md size-13" />
+      </div> */}
       <ul className="flex flex-row ml-auto mr-10 gap-10 items-center">
         <Link
           to="/"

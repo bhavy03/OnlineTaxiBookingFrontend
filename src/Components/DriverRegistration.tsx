@@ -185,7 +185,7 @@ export const DriverRegistration = () => {
         toast.success("Driver registered successfully!");
         setTimeout(() => {
           navigate("/driver");
-        }, 1000);
+        }, 500);
         setName("");
         setEmail("");
         setPassword("");

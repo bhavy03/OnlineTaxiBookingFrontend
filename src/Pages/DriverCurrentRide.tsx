@@ -76,10 +76,11 @@ export const DriverCurrentRide = ({
 
   useEffect(() => {
     signalRConnection?.on("RideCancelledFromUser", (rideId) => {
-      toast.error(`Ride ${rideId} Cancelled`);
+      console.log("Ride cancelled by user:", rideId);
+      toast.error("Current Ride Cancelled");
       intervalRef.current = setTimeout(() => {
         window.location.reload();
-      }, 2000);
+      }, 500);
     });
     return () => {
       if (intervalRef.current) {

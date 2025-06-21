@@ -40,3 +40,6 @@ export const router = createBrowserRouter(
     </>
   )
 );
+
+// 26.9166996
+// 75.6962098

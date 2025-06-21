@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router";
 import { useAppDispatch } from "../store/hooks";
 import { setIsAuthenticated } from "../features/userSlice";
+// import LOGO from "../assets/LOGO.jpg";
 
 export const UserLogin = () => {
   const [email, setEmail] = useState("");

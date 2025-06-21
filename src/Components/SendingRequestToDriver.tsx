@@ -106,6 +106,10 @@ export const SendingRequestToDriver = React.memo(
           <div className="text-xl font-semibold text-gray-700">
             Waiting for Driver's response...
           </div>
+          <br />
+          <div className="text-xl font-semibold text-gray-700">
+            !Please do not refresh the page.
+          </div>
         </div>
       );
     }

@@ -105,6 +105,7 @@ export const UserCurrentRide = ({
   }
 
   const handleGiveRating = async (ratingValue: number) => {
+    console.log("Submitting rating:", ratingValue);
     if (!currentRideDriverEmail) {
       toast.error("Driver email not available to submit rating.");
       return;
